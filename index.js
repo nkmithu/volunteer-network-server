@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
 
 console.log(process.env.DB_PASS);
 
@@ -51,16 +52,24 @@ client.connect(err => {
     })
 
     app.get('/users', (req, res) => {
-        users.find({})
+        const loggedInEmail = req.query.email;
+        users.find({email:loggedInEmail})
             .toArray((err, documents) => {
                 res.send(documents);
             })
     })
+
+    app.delete('/delete/:id', (req, res) => {
+        console.log(req.params.id);
+        users.deleteOne({
+            _id: ObjectId(req.params.id)
+          })
+          .then(result => {
+            res.send(result.deletedCount>0);
+          })
+      })
 });
 
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
 
 app.listen(port)
